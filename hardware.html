@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Davy · Hardware</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0e0e0e;
+      --surface:   #161616;
+      --border:    #2a2a2a;
+      --text:      #d4d4d4;
+      --muted:     #6b6b6b;
+      --accent:    #f97316;
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'IBM Plex Sans', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.15;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--accent);
+      border-radius: 6px;
+      padding: 2.4rem 2.8rem;
+      max-width: 620px;
+      width: 100%;
+    }
+
+    /* ── Hardware carousel ── */
+    .hw-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.6rem;
+    }
+
+    .hw-nav-btn {
+      flex-shrink: 0;
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .9rem;
+      cursor: pointer;
+      transition: border-color .2s, color .2s, background .2s;
+    }
+
+    .hw-nav-btn:hover:not(:disabled) {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: #1c1c1c;
+    }
+
+    .hw-nav-btn:disabled {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .hw-title-wrap { flex: 1; min-width: 0; text-align: center; }
+
+    .hw-era {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .68rem; color: var(--accent);
+      letter-spacing: .1em; text-transform: uppercase;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .hw-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .95rem; font-weight: 600; color: #fff;
+      margin-top: .2rem;
+    }
+
+    .hw-dots {
+      display: flex; justify-content: center; gap: .4rem;
+      margin-bottom: 1.8rem;
+    }
+
+    .hw-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--border);
+      transition: background .2s, transform .2s;
+    }
+
+    .hw-dot.active { background: var(--accent); transform: scale(1.3); }
+
+    .hw-body { animation: fadein .35s ease both; }
+
+    @keyframes fadein {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .spec-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      padding: .55rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .spec-row:last-of-type { border-bottom: none; }
+
+    .spec-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .72rem; color: var(--muted);
+      letter-spacing: .08em; text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .spec-value {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .82rem; color: var(--text);
+      text-align: right;
+    }
+
+    .spec-disks { padding-top: .8rem; }
+
+    .disk-tree {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .78rem;
+      line-height: 1.9;
+      color: var(--text);
+      white-space: pre;
+    }
+
+    .disk-tree .branch { color: var(--muted); }
+    .disk-tree .mount   { color: var(--accent); }
+    .disk-tree .fs      { color: var(--muted); }
+
+    footer {
+      position: relative; z-index: 1;
+      margin-top: 1.4rem; font-size: .7rem;
+      color: var(--muted); font-family: 'IBM Plex Mono', monospace; opacity: .45;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 1.4rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: .75rem;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color .2s;
+      position: relative; z-index: 1;
+    }
+
+    .back-link:hover { color: var(--accent); }
+
+    @media (max-width: 480px) {
+      .card { padding: 1.8rem 1.4rem; }
+      .spec-row { flex-direction: column; gap: .1rem; }
+      .spec-value { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="hw-header">
+    <button class="hw-nav-btn" id="prevBtn" aria-label="Previous hardware">|&lt;|</button>
+    <div class="hw-title-wrap">
+      <div class="hw-era" id="hwEra"></div>
+      <div class="hw-title" id="hwTitle"></div>
+    </div>
+    <button class="hw-nav-btn" id="nextBtn" aria-label="Next hardware">|&gt;|</button>
+  </div>
+
+  <div class="hw-dots" id="hwDots"></div>
+
+  <div class="hw-body" id="hwBody"></div>
+</div>
+
+<footer>built with ~/<span style="color:var(--accent)">html</span> · no frameworks harmed</footer>
+<a class="back-link" href="index.html">← back to profile</a>
+
+<script>
+  const rigs = [
+    {
+      era: 'Current',
+      title: 'Daily Driver',
+      mobo: 'Qiyida D4 X99',
+      cpu: 'Intel Xeon E5-2630 v4 (10C/20T)',
+      ram: '4 GB',
+      gpu: 'RX 550 GDDR5 4GB',
+      disksHtml:
+`<span class="branch">├─</span> HDD <span class="fs">500GB · ZFS</span>       <span class="mount">[/home]</span>
+<span class="branch">└─</span> NVMe <span class="fs">128GB · LVM</span>
+<span class="branch">   ├─</span> vg-gentoo <span class="fs">60GB</span>  <span class="mount">[/]</span>
+<span class="branch">   ├─</span> vg-local  <span class="fs">40GB</span>  <span class="mount">[~/.config]</span>
+<span class="branch">   └─</span> vg-swap   <span class="fs">12GB</span>  <span class="mount">[swap]</span>`
+    },
+    {
+      era: '2026',
+      title: 'Previous Rig',
+      mobo: 'E410MAB',
+      cpu: 'Intel Celeron N4020 (2C/2T)',
+      ram: '4 GB',
+      gpu: 'Intel UHD 600',
+      disksHtml:
+`<span class="branch">├─</span> HDD <span class="fs">500GB · EXT4</span>      <span class="mount">[/home]</span>
+<span class="branch">└─</span> NVMe <span class="fs">128GB · LVM</span>
+<span class="branch">   ├─</span> vg-gentoo <span class="fs">60GB</span>  <span class="mount">[/]</span>
+<span class="branch">   ├─</span> vg-local  <span class="fs">60GB</span>  <span class="mount">[~/local]</span>
+<span class="branch">   └─</span> vg-swap    <span class="fs">8GB</span>  <span class="mount">[swap]</span>`
+    },
+    {
+      era: '2021 – 2026',
+      title: 'Old Rig',
+      mobo: 'LOGZAW-70',
+      cpu: 'Intel Celeron N2840 (2C/2T)',
+      ram: '8 GB',
+      gpu: 'Intel HD Graphics (Bay Trail)',
+      disksHtml:
+`<span class="branch">└─</span> HDD <span class="fs">500GB · manual partition</span>
+<span class="branch">   ├─</span> sda1 <span class="fs">400GB</span>  <span class="mount">[/home]</span>
+<span class="branch">   └─</span> sda2 <span class="fs">100GB</span>  <span class="mount">[/]</span>`
+    }
+  ];
+
+  let current = 0;
+
+  const hwEra = document.getElementById('hwEra');
+  const hwTitle = document.getElementById('hwTitle');
+  const hwBody = document.getElementById('hwBody');
+  const hwDots = document.getElementById('hwDots');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+
+  function renderDots() {
+    hwDots.innerHTML = rigs.map((_, i) =>
+      `<span class="hw-dot${i === current ? ' active' : ''}"></span>`
+    ).join('');
+  }
+
+  function render() {
+    const rig = rigs[current];
+    hwEra.textContent = rig.era;
+    hwTitle.textContent = rig.title;
+    hwBody.innerHTML = `
+      <div class="spec-row"><span class="spec-label">MOBO</span><span class="spec-value">${rig.mobo}</span></div>
+      <div class="spec-row"><span class="spec-label">CPU</span><span class="spec-value">${rig.cpu}</span></div>
+      <div class="spec-row"><span class="spec-label">RAM</span><span class="spec-value">${rig.ram}</span></div>
+      <div class="spec-row"><span class="spec-label">GPU</span><span class="spec-value">${rig.gpu}</span></div>
+      <div class="spec-row spec-disks" style="flex-direction:column; align-items:flex-start;">
+        <span class="spec-label" style="margin-bottom:.5rem;">Disks</span>
+        <div class="disk-tree">${rig.disksHtml}</div>
+      </div>
+    `;
+    hwBody.style.animation = 'none';
+    void hwBody.offsetWidth;
+    hwBody.style.animation = '';
+
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === rigs.length - 1;
+    renderDots();
+  }
+
+  prevBtn.addEventListener('click', () => { if (current > 0) { current--; render(); } });
+  nextBtn.addEventListener('click', () => { if (current < rigs.length - 1) { current++; render(); } });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') prevBtn.click();
+    if (e.key === 'ArrowRight') nextBtn.click();
+  });
+
+  render();
+</script>
+
+</body>
+</html>
